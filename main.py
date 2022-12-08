@@ -1,12 +1,35 @@
 import pandas as pd
-
-
-def nearestNeighbor():
-    print()
+import math
 
 
 def leaveOneOutEvaluation(data, features):
-    return 1
+    # converted from pandas dataframe to numpy because I found out it's much slower
+    newData = data.values
+    numberClassifiedCorrect = 0
+    numInstances = len(data.axes[0])  # gets number of rows
+    numFeatures = len(data.axes[1])   # gets number of columns
+
+    for i in range(0, numInstances):
+        objectToClassify = i
+        labelObjectToClassify = newData[objectToClassify][0]
+        # https://www.geeksforgeeks.org/python-infinity/
+        nearestNeighborDistance = float('inf')
+        nearestNeighborLocation = float('inf')
+        for j in range(0, numInstances):
+            if j != i:
+                distance = 0
+                for k in range(1, len(features)):
+                    distance += pow(newData[objectToClassify]
+                                    [features[k]] - newData[j][features[k]], 2)
+                distance = math.sqrt(distance)
+                if distance < nearestNeighborDistance:
+                    nearestNeighborDistance = distance
+                    nearestNeighborLocation = j
+                    nearestNeighborLabel = newData[nearestNeighborLocation][0]
+        if labelObjectToClassify == nearestNeighborLabel:
+            numberClassifiedCorrect += 1
+
+    return (numberClassifiedCorrect/numInstances) * 100
 
 
 def forwardSelection(data):
@@ -73,7 +96,7 @@ def backwardElimination(data):
 
         for j in range(1, numFeatures):
             if j in currentFeatures:
-                #print("currentFeatures:", currentFeatures)
+                # print("currentFeatures:", currentFeatures)
                 # used https://stackoverflow.com/questions/11362232/python-variables-changing-when-they-shouldnt to learn that in python you need to make a copy or else temp array will be changed too
                 tempFeatures = currentFeatures.copy()
                 tempFeatures.remove(j)
@@ -125,7 +148,15 @@ def main():
     print("Running nearest neighbor with all ", numFeatures,
           " features, using \"leaving-one-out\" evaluation, I get an accuracy of ", tempAccuracy, "%\n")
 
-    print(data)
+#
+    # print(data)
+    # values = data.values
+    # print("help", type(currentFeatures))
+    # print("values type: ", type(values))
+    # print("data type: ", type(data))
+    # # print(values)
+    # row1 = values[0][0]
+    # print("row1: ", row1)
 
     print("Beginning Search.\n")
     if searchNum == 1:
