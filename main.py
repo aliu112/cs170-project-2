@@ -1,9 +1,11 @@
 import pandas as pd
 import math
+import time
+import numpy as np
 
 
 def leaveOneOutEvaluation(data, features):
-    # converted from pandas dataframe to numpy because I found out it's much slower
+    # converted from pandas dataframe to numpy because I found out it's much slower https://stackoverflow.com/questions/54549284/convert-dataframe-to-2d-array
     newData = data.values
     numberClassifiedCorrect = 0
     numInstances = len(data.axes[0])  # gets number of rows
@@ -18,14 +20,26 @@ def leaveOneOutEvaluation(data, features):
         for j in range(0, numInstances):
             if j != i:
                 distance = 0
-                for k in range(1, len(features)):
+                # iterate and calucalte the total distance: distance = sqrt(sum((object_to_classify-data(k,2:end)).^2)); from the slides
+                for k in range(0, len(features)):
                     distance += pow(newData[objectToClassify]
                                     [features[k]] - newData[j][features[k]], 2)
+
+                # People said that numpy functions would speed up the program but it did not
+                # I wanted to try and increase my program because it takes quite a while at the moment but this was a failed attempt
+                # distance = np.linalg.norm(
+                #     newData[objectToClassify][features] - newData[j][features])
+                # temp = newData[objectToClassify][features] - \
+                #     newData[j][features]
+                # distance = np.sqrt(np.dot(temp.T, temp))
+                # distance = np.sqrt(np.sum(np.square(temp)))
+
                 distance = math.sqrt(distance)
                 if distance < nearestNeighborDistance:
                     nearestNeighborDistance = distance
                     nearestNeighborLocation = j
                     nearestNeighborLabel = newData[nearestNeighborLocation][0]
+
         if labelObjectToClassify == nearestNeighborLabel:
             numberClassifiedCorrect += 1
 
@@ -33,6 +47,8 @@ def leaveOneOutEvaluation(data, features):
 
 
 def forwardSelection(data):
+    # used https://stackoverflow.com/questions/12444004/how-long-does-my-python-application-take-to-run
+    start_time = time.time()
     numInstances = len(data.axes[0])  # gets number of rows
     numFeatures = len(data.axes[1])   # gets number of columns
     currentFeatures = []  # keeps track of the features being used
@@ -41,7 +57,7 @@ def forwardSelection(data):
     # keeps track of the very best accuracy, bestAccuracy only keeps track of the bestAccuracy given the next options
     overallBestAccuracy = 0
 
-    for i in range(1, numFeatures):  # +1 because pandas reads columns 0-6
+    for i in range(1, numFeatures):
         bestAccuracy = 0
         flag = 0
 
@@ -75,16 +91,19 @@ def forwardSelection(data):
 
     print("Finishd Search!! The best feature subset is {", bestFeatures,
           "}, which has an accuracy of", overallBestAccuracy, "%\n")
+    print("Program took ", time.time() - start_time, "seconds to run")
 
 
 def backwardElimination(data):
+    # used https://stackoverflow.com/questions/12444004/how-long-does-my-python-application-take-to-run
+    start_time = time.time()
     numInstances = len(data.axes[0])  # gets number of rows
     numFeatures = len(data.axes[1])   # gets number of columns
     currentFeatures = []  # keeps track of the features being used
     bestFeatures = []
     featureToRemove = []
 
-    for i in range(1, numFeatures):
+    for i in range(1, numFeatures):  # fills the arrays so we can eliminate
         currentFeatures.append(i)
         bestFeatures.append(i)
     # keeps track of the very best accuracy, bestAccuracy only keeps track of the bestAccuracy given the next options
@@ -126,6 +145,7 @@ def backwardElimination(data):
 
     print("Finishd Search!! The best feature subset is {", bestFeatures,
           "}, which has an accuracy of", overallBestAccuracy, "%\n")
+    print("Program took ", time.time() - start_time, "seconds to run")
 
 
 def main():
